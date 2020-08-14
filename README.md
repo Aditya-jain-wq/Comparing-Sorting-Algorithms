@@ -1,3 +1,10 @@
 This program can help you find best sorting algorithm for your specific data.
-Example insertion sort can be best when only 2-3 elements are out of place and rest are sorted. (O(n))
-If number of elements is 2-3 then bubble can be amoung best candidates.
+
+Some Observations:
+
+Insertion sort can be best when only 2-3 elements are out of place and rest are sorted. (O(n))
+If number of elements are around 10-20 insertion could be best.
+
+If number of elements are 2-3 then bubble sort can be amoung best candidates.
+
+If range of numbers are small and number of element are huge then Count Sort can be amoung best candidates.

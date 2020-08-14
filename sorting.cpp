@@ -3,7 +3,7 @@ using namespace std;
 
 #define nl "\n"
 #define show(x) cout<<#x<<" "<<x<<"\n"
-#define COUNT_SORTS 6
+#define COUNT_OF_SORTS 8
 typedef vector<int>::iterator iter;
 
 long long bubble_sort(iter begin, iter end){
@@ -160,6 +160,78 @@ long long heap_sort(iter begin, iter end){
 	return chrono::duration_cast<chrono::nanoseconds>(elapsed).count();
 }
 
+
+long long count_sort(iter begin, iter end){
+	vector<int> numbers(begin, end);
+	int n = numbers.size();
+	int maxi = *max_element(numbers.begin(), numbers.end());
+	int mini = *min_element(numbers.begin(), numbers.end());
+	if((maxi-mini) > (int)1e6){
+		cout<<"Not enough space to compute Count sort"<<nl;
+		return LLONG_MAX;
+	}
+	auto start = chrono::high_resolution_clock::now();
+
+	maxi = *max_element(numbers.begin(), numbers.end());
+	mini = *min_element(numbers.begin(), numbers.end());
+	int count[maxi - mini + 1] = {0};
+
+	for(int i : numbers)
+		count[i-mini]++;
+	int last = 0;
+	for(int i = mini; i <= maxi; i++)
+		while(count[i-mini]--)
+			numbers[last++] = i;
+
+	auto elapsed = chrono::high_resolution_clock::now() - start;
+	return chrono::duration_cast<chrono::nanoseconds>(elapsed).count();
+}
+
+
+void radixSort(vector<int> &numbers){
+	int n = numbers.size();
+	int maxi = *max_element(numbers.begin(), numbers.end());
+
+	vector<int> halfSorted(n);
+	for(int powered = 1; maxi/powered > 0; powered*=10){
+		int count[10] = {0};
+		for(int i : numbers)
+			count[(i/powered)%10]++;
+
+		for(int i = 1; i < 10; i++)
+			count[i] += count[i-1];
+
+		for(int i = n-1; i >= 0; i--)
+			halfSorted[--count[(numbers[i]/powered)%10]] = numbers[i];
+		numbers.swap(halfSorted);
+	}
+}
+
+long long radix_sort(iter begin, iter end){
+	vector<int> numbers(begin, end);
+	int n = numbers.size();
+	auto start = chrono::high_resolution_clock::now();
+
+	int pos = 0, neg = 0;
+	vector<int> positive(n), negative(n);
+	for(int i : numbers)
+		if(i < 0)
+			negative[neg++] = -i;
+		else
+			positive[pos++] = i;
+	positive.resize(pos);
+	negative.resize(neg);
+	radixSort(positive);
+	radixSort(negative);
+	for(int i = 0; i < neg; i++)
+		numbers[i] = -negative[i];
+	for(int i = neg; i < n; i++)
+		numbers[i] = positive[i-neg];
+
+	auto elapsed = chrono::high_resolution_clock::now() - start;
+	return chrono::duration_cast<chrono::nanoseconds>(elapsed).count();
+}
+
 int main(){   
 
 	cout<<"We'll sort your integer array in different methods and tell you the fastes for your specific data"<<nl
@@ -171,10 +243,11 @@ int main(){
 	cout<<"Merge Sort(O(n logn))"<<nl;
 	cout<<"Quick Sort"<<nl;
 	cout<<"Heap Sort"<<nl;
-	cout<<"Heap Sort"<<nl;
+	cout<<"Count Sort"<<nl;
+	cout<<"Radix Sort"<<nl;
 	// cout<<"inBuilt (includes time to call function)"<<nl<<nl;
 
-	cout<<"Number of elements in your array? (<"<<INT_MAX<<") ";
+	cout<<"Number of elements in your array? (<"<<(int)1e6<<") ";
 	int n;
 	cin>>n;
 	cout<<n<<" number(s)?"<<nl;
@@ -187,22 +260,23 @@ int main(){
 	}
 
 	// function pointer array containing all implemented sorts
-	long long (*sortingAlgo[COUNT_SORTS])(iter, iter); 
+	long long (*sortingAlgo[COUNT_OF_SORTS])(iter, iter); 
 	sortingAlgo[0] = bubble_sort;
 	sortingAlgo[1] = insertion_sort;
 	sortingAlgo[2] = selection_sort;
 	sortingAlgo[3] = merge_sort;
 	sortingAlgo[4] = quick_sort;
 	sortingAlgo[5] = heap_sort;
+	sortingAlgo[6] = count_sort;
+	sortingAlgo[7] = count_sort;
 
 	//calculating time for each sort
-	long long timeTaken[COUNT_SORTS];
-	for(int i = 0; i < COUNT_SORTS; i++)
+	long long timeTaken[COUNT_OF_SORTS];
+	for(int i = 0; i < COUNT_OF_SORTS; i++)
 		timeTaken[i] = sortingAlgo[i](numbers.begin(), numbers.end());
 
 	for(long long time : timeTaken)
 		cout<<time<<" ";
-	
-	
+
 	return 0;
 }
