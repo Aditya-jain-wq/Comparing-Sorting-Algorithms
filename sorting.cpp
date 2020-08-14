@@ -2,8 +2,13 @@
 using namespace std;
 
 #define nl "\n"
+#define show(x) cout<<#x<<" "<<x<<"\n"
+#define COUNT_SORTS 6
+typedef vector<int>::iterator iter;
 
-long long bubble_sort(vector<int> numbers, int n){
+long long bubble_sort(iter begin, iter end){
+	vector<int> numbers(begin, end);
+	int n = numbers.size();
 	auto start = chrono::high_resolution_clock::now();
 	
 	for(int i = 0; i < n-1; i++)
@@ -16,7 +21,9 @@ long long bubble_sort(vector<int> numbers, int n){
 }
 
 
-long long insertion_sort(vector<int> numbers, int n){
+long long insertion_sort(iter begin, iter end){
+	vector<int> numbers(begin, end);
+	int n = numbers.size();
 	auto start = chrono::high_resolution_clock::now();
 
 	for(int i = 1; i < n; i++)
@@ -28,7 +35,9 @@ long long insertion_sort(vector<int> numbers, int n){
 }
 
 
-long long selection_sort(vector<int> numbers, int n){
+long long selection_sort(iter begin, iter end){
+	vector<int> numbers(begin, end);
+	int n = numbers.size();
 	auto start = chrono::high_resolution_clock::now();
 
 	int mini;
@@ -67,7 +76,9 @@ void mergeSort(vector<int> &numbers, int low, int high){
 	merge(numbers, low, mid, high);
 }
 
-long long merge_sort(vector<int> numbers, int n){
+long long merge_sort(iter begin, iter end){
+	vector<int> numbers(begin, end);
+	int n = numbers.size();
 	auto start = chrono::high_resolution_clock::now();
 
 	mergeSort(numbers, 0, n-1);
@@ -77,62 +88,79 @@ long long merge_sort(vector<int> numbers, int n){
 }
 
 
-int partition(vector<int> &arr,int l,int h)
+int partition(vector<int> &numbers,int l,int h)
 {
-	int element=arr[l];
+	int element=numbers[l];
 	int i=l;
 	int j=h;
-	swap(arr[i],arr[j]);
+	swap(numbers[i],numbers[j]);
 	do
 	{
-		swap(arr[i],arr[j]);
-		do{i++;}while(arr[i]<=element);
-		do{j--;}while(arr[j]>element);
+		swap(numbers[i],numbers[j]);
+		do{i++;}while(numbers[i]<=element);
+		do{j--;}while(numbers[j]>element);
 	}
 	while(i<j);
 
-	swap(arr[l],arr[j]);
+	swap(numbers[l],numbers[j]);
 	return j;
 }
 
-void quickSort(vector<int> &arr,int l,int h)
+void quickSort(vector<int> &numbers,int l,int h)
 {
 	int mid;
 	if(l<h)
 	{
-		mid=partition(arr,l,h);
-		cout<<nl;
-		for(int i : arr)
-			cout<<i<<" ";
-		quickSort(arr,l,mid);
-		quickSort(arr,mid+1,h);
+		mid=partition(numbers,l,h);
+		quickSort(numbers,l,mid);
+		quickSort(numbers,mid+1,h);
 	}
 }
 
-long long quick_sort(vector<int> numbers, int n){
+long long quick_sort(iter begin, iter end){
+	vector<int> numbers(begin, end);
+	int n = numbers.size();
 	auto start = chrono::high_resolution_clock::now();
 
 	quickSort(numbers, 0, n);
-	cout<<nl;
-	for(int i : numbers)
-		cout<<i<<" ";
 
 	auto elapsed = chrono::high_resolution_clock::now() - start;
 	return chrono::duration_cast<chrono::nanoseconds>(elapsed).count();
 }
 
 
-long long heap_sort(vector<int> numbers, int n){
+void heapify(vector<int> &numbers, int n, int i){
+	int larger = i;
+	int left = 2*i+1;
+	int right = 2*i+2;
+	if(left < n && numbers[left]>numbers[larger])
+		larger = left;
+	if(right < n && numbers[right]>numbers[larger])
+		larger = right;
+	if(larger != i){
+		swap(numbers[larger], numbers[i]);
+		heapify(numbers, n, larger);
+	}
+}
+
+long long heap_sort(iter begin, iter end){
+	vector<int> numbers(begin, end);
+	int n = numbers.size();
 	auto start = chrono::high_resolution_clock::now();
 
-	for(int i = )
+	for(int i = n/2 - 1; i >= 0; i--)
+		heapify(numbers, n, i);
+
+	for(int i = n-1; i > 0; i--){
+		swap(numbers[i], numbers[0]);
+		heapify(numbers, i, 0);
+	}
 
 	auto elapsed = chrono::high_resolution_clock::now() - start;
 	return chrono::duration_cast<chrono::nanoseconds>(elapsed).count();
 }
 
 int main(){   
-	// fastio;
 
 	cout<<"We'll sort your integer array in different methods and tell you the fastes for your specific data"<<nl
 	<<"Option available are : ";
@@ -143,11 +171,13 @@ int main(){
 	cout<<"Merge Sort(O(n logn))"<<nl;
 	cout<<"Quick Sort"<<nl;
 	cout<<"Heap Sort"<<nl;
-	cout<<"inBuilt (includes time to call function)"<<nl;
+	cout<<"Heap Sort"<<nl;
+	// cout<<"inBuilt (includes time to call function)"<<nl<<nl;
 
 	cout<<"Number of elements in your array? (<"<<INT_MAX<<") ";
 	int n;
 	cin>>n;
+	cout<<n<<" number(s)?"<<nl;
 	vector<int> numbers(n);
 	for(int i = 0; i < n; i++)
 		cin>>numbers[i];
@@ -155,19 +185,24 @@ int main(){
 		cout<<"only one element so every algo is best"<<nl;
 		return 0;
 	}
-	
-	long long bubble = bubble_sort(numbers, n);
-	long long insertion = insertion_sort(numbers, n);
-	long long selection = selection_sort(numbers, n);
-	long long merge = merge_sort(numbers, n);
-	long long quick = quick_sort(numbers, n);
-	long long heap = heap_sort(numbers, n);
 
-	// auto start = chrono::high_resolution_clock::now();
-	// sort(arr, arr+n);
-	// auto elapsed = chrono::high_resolution_clock::now() - start;
-	// long long ms = chrono::duration_cast<chrono::nanoseconds>(elapsed).count();
-	// cout<<ms<<"ms"<<nl;	
+	// function pointer array containing all implemented sorts
+	long long (*sortingAlgo[COUNT_SORTS])(iter, iter); 
+	sortingAlgo[0] = bubble_sort;
+	sortingAlgo[1] = insertion_sort;
+	sortingAlgo[2] = selection_sort;
+	sortingAlgo[3] = merge_sort;
+	sortingAlgo[4] = quick_sort;
+	sortingAlgo[5] = heap_sort;
+
+	//calculating time for each sort
+	long long timeTaken[COUNT_SORTS];
+	for(int i = 0; i < COUNT_SORTS; i++)
+		timeTaken[i] = sortingAlgo[i](numbers.begin(), numbers.end());
+
+	for(long long time : timeTaken)
+		cout<<time<<" ";
+	
 	
 	return 0;
 }
