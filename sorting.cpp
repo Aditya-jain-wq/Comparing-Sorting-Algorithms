@@ -2,7 +2,7 @@
 using namespace std;
 
 #define nl "\n"
-#define show(x) cout<<#x<<" "<<x<<"\n"
+#define deb(x) cout<<#x<<" "<<x<<"\n"
 #define COUNT_OF_SORTS 8
 typedef vector<int>::iterator iter;
 
@@ -188,45 +188,29 @@ long long count_sort(iter begin, iter end){
 }
 
 
-void radixSort(vector<int> &numbers){
-	int n = numbers.size();
-	int maxi = *max_element(numbers.begin(), numbers.end());
-
-	vector<int> halfSorted(n);
-	for(int powered = 1; maxi/powered > 0; powered*=10){
-		int count[10] = {0};
-		for(int i : numbers)
-			count[(i/powered)%10]++;
-
-		for(int i = 1; i < 10; i++)
-			count[i] += count[i-1];
-
-		for(int i = n-1; i >= 0; i--)
-			halfSorted[--count[(numbers[i]/powered)%10]] = numbers[i];
-		numbers.swap(halfSorted);
-	}
-}
-
 long long radix_sort(iter begin, iter end){
 	vector<int> numbers(begin, end);
 	int n = numbers.size();
 	auto start = chrono::high_resolution_clock::now();
 
-	int pos = 0, neg = 0;
-	vector<int> positive(n), negative(n);
+	int maxi = INT_MIN;
 	for(int i : numbers)
-		if(i < 0)
-			negative[neg++] = -i;
-		else
-			positive[pos++] = i;
-	positive.resize(pos);
-	negative.resize(neg);
-	radixSort(positive);
-	radixSort(negative);
-	for(int i = 0; i < neg; i++)
-		numbers[i] = -negative[i];
-	for(int i = neg; i < n; i++)
-		numbers[i] = positive[i-neg];
+		maxi = max(maxi, abs(i));
+
+	vector<int> halfSorted(n);
+	for(int powered = 1; maxi/powered > 0; powered*=10){
+		int count[19] = {0};
+		for(int i : numbers)
+			count[((i/powered)%10)+9]++;
+
+		for(int i = 1; i < 19; i++)
+			count[i] += count[i-1];
+
+		for(int i = n-1; i >= 0; i--)
+			halfSorted[--count[((numbers[i]/powered)%10)+9]] = numbers[i];
+
+		numbers.swap(halfSorted);
+	}
 
 	auto elapsed = chrono::high_resolution_clock::now() - start;
 	return chrono::duration_cast<chrono::nanoseconds>(elapsed).count();
@@ -268,7 +252,7 @@ int main(){
 	sortingAlgo[4] = quick_sort;
 	sortingAlgo[5] = heap_sort;
 	sortingAlgo[6] = count_sort;
-	sortingAlgo[7] = count_sort;
+	sortingAlgo[7] = radix_sort;
 
 	//calculating time for each sort
 	long long timeTaken[COUNT_OF_SORTS];
