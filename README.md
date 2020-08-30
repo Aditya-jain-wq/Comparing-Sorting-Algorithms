@@ -1,4 +1,5 @@
 This program can help you find best sorting algorithm for your specific data.
+You can use this program when you have certain idea about what kind of data usually it would be and that data needs to be sorted on client side.
 
 Some Observations:
 
